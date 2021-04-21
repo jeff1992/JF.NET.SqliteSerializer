@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.ComponentModel;
 
-namespace JF.Persistence
+namespace JF.NET.SqliteSerializer
 {
     public interface IGObject
     {

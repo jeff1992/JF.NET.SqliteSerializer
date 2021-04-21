@@ -11,7 +11,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization.Formatters.Binary;
 
-namespace JF.Persistence
+namespace JF.NET.SqliteSerializer
 {
     /// <summary>
     /// 序列化工作器

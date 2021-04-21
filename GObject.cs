@@ -9,7 +9,7 @@ using System.Collections;
 using System.Drawing;
 using System.ComponentModel;
 
-namespace JF.Persistence
+namespace JF.NET.SqliteSerializer
 {
     /// <summary>
     ///  为可采用sqlite序列化的对象提供一个基类

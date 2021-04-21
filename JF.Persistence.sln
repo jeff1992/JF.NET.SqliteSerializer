@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31112.23
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JF.Persistence", "JF.Persistence.csproj", "{1F7C1DA6-C5AD-49EF-B98F-66172B31259E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JF.NET.SqliteSerializer", "JF.NET.SqliteSerializer.csproj", "{1F7C1DA6-C5AD-49EF-B98F-66172B31259E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

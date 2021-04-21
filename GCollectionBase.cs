@@ -6,7 +6,7 @@ using System.Collections;
 using System.Data;
 using System.ComponentModel;
 
-namespace JF.Persistence
+namespace JF.NET.SqliteSerializer
 {
     /// <summary>
     /// 提供一个能够输出集合变化事件的基础类

@@ -5,7 +5,7 @@ using System.Text;
 using System.Reflection;
 using System.Drawing;
 
-namespace JF.Persistence
+namespace JF.NET.SqliteSerializer
 {
 
     internal class GTypeInfo

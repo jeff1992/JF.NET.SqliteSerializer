@@ -3,7 +3,7 @@
  using System.Data;
  using System.Data.SQLite;
 
-namespace JF.Persistence
+namespace JF.NET.SqliteSerializer
 {
     /// <summary>
     /// SQLiteHelper
