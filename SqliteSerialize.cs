@@ -157,7 +157,7 @@ namespace JF.NET.SqliteSerializer
                     dbFieldValue = gitem.GID;
                 }
                 else if (fieldType == typeof(string)) dbFieldValue = fieldValue;
-                else if (fieldType == typeof(float) || fieldType == typeof(double)) dbFieldValue = fieldValue;
+                else if (fieldType == typeof(Single) || fieldType == typeof(Double) || fieldType == typeof(Decimal)) dbFieldValue = fieldValue;
                 else if (fieldType == typeof(Point)) { Point p = (Point)fieldValue; dbFieldValue = string.Format("{0},{1}", p.X, p.Y); }
                 else if (fieldType == typeof(Size)) { Size s = (Size)fieldValue; dbFieldValue = string.Format("{0},{1}", s.Width, s.Height); }
                 else if (fieldType == typeof(Rectangle)) { Rectangle r = (Rectangle)fieldValue; dbFieldValue = string.Format("{0},{1},{2},{3}", r.X, r.Y, r.Width, r.Height); }
@@ -317,7 +317,7 @@ namespace JF.NET.SqliteSerializer
             if (type.IsEnum) return DBFieldType.TEXT;
             if (typeof(IGObject).IsAssignableFrom(type)) return DBFieldType.INTEGER;
             if (type == typeof(string)) return DBFieldType.TEXT;
-            if (type == typeof(float) || type == typeof(double)) return DBFieldType.REAL;
+            if (type == typeof(Single) || type == typeof(Double) || type == typeof(Decimal)) return DBFieldType.REAL;
             if (type == typeof(Point)) return DBFieldType.TEXT;
             if (type == typeof(Size)) return DBFieldType.TEXT;
             if (type == typeof(Rectangle)) return DBFieldType.TEXT;
