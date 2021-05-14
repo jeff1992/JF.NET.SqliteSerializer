@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageId>JF.NET.SqliteSerializer</PackageId>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
     <Authors>Jeff.Wang</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Description>Serialize object tree to a sqlite database file and deserialize</Description>
