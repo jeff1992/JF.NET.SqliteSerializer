@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Collections;
 using System.Drawing;
 using System.ComponentModel;
+using Newtonsoft.Json;
 
 namespace JF.NET.SqliteSerializer
 {
@@ -34,6 +35,7 @@ namespace JF.NET.SqliteSerializer
         /// 获取或设置一个值，指示对象是否被修改
         /// </summary>
         [Browsable(false)]
+        [JsonIgnore]
         public bool GDirty
         {
             get { return gGDirty; }
@@ -44,6 +46,7 @@ namespace JF.NET.SqliteSerializer
         }
 
         [Browsable(false)]
+        [JsonIgnore]
         public int GVisitCount
         {
             get { return gVisitCount; }
@@ -53,6 +56,7 @@ namespace JF.NET.SqliteSerializer
         /// 获取对象的唯一识别ID
         /// </summary>
         [Browsable(false)]
+        [JsonIgnore]
         public int GID
         {
             get { return gid; }
