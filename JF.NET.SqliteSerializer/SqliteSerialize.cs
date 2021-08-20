@@ -243,7 +243,10 @@ namespace JF.NET.SqliteSerializer
             //获取所有表名称
             using(DataSet ds = sqliteHelper.GetDs("SELECT name FROM sqlite_master WHERE type = 'table'"))
             {
-                dataTables.AddRange((from t in ds.Tables[0].Rows.Cast<DataRow>() select t[0].ToString()).ToArray());
+                dataTables = ds.Tables[0].Rows.Cast<DataRow>()
+                            .Select(m => m[0].ToString())
+                            .Where(m => assembly.GetType(m, false) != null)
+                            .ToList();
             }
             var types = new List<Type>();
             foreach(var name in dataTables)
