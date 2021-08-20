@@ -31,6 +31,7 @@ namespace JF.NET.SqliteSerializer
         #endregion
 
         #region Property
+        [Browsable(false)]
         [JsonIgnore]
         public bool GDirty
         {
