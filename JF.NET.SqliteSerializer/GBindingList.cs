@@ -1,15 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using JF.NET.SqliteSerializer;
-using Newtonsoft.Json;
 
-namespace MotorLine.Core
+namespace JF.NET.SqliteSerializer
 {
     public class GBindingList<T> : GObject, IBindingList, ICancelAddNew, IRaiseItemChangedEvents, IGList where T : class, IGObject
     {
