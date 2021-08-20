@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Reflection;
 using System.Drawing;
+using static JF.NET.SqliteSerializer.SqliteSerialize;
 
 namespace JF.NET.SqliteSerializer
 {
@@ -43,33 +44,41 @@ namespace JF.NET.SqliteSerializer
             //gtype.Fields = (from t in fields where !t.IsNotSerialized select t).ToArray();
 
             //标识是否为集合
-            bool isCollection = typeof(IGCollectionBase).IsAssignableFrom(type);
-            //            bool isCollection = type.(typeof(IGCollectionBase));
+            bool isList = typeof(IGList).IsAssignableFrom(type);
+
+            var typeName = gtype.FullName;
+            if (type.IsGenericType)
+            {
+                var genType = type.GetGenericTypeDefinition();
+                var entityType = type.GetGenericArguments();
+            }
+            var fields = new Dictionary<string, DBFieldType>();
+            
 
             //获取createTableSql
             gtype.CreateTableSql = string.Format(
                 "CREATE TABLE '{0}' ({1})",
-                gtype.FullName,
-                string.Join(",", (from t in gtype.Fields select ("'" + t.Name + "' " + SqliteSerialize.GetDbType(t.FieldType)))) + (isCollection ? ",innerList TEXT" : "")
+                typeName,
+                string.Join(",", (from t in gtype.Fields select ("'" + t.Name + "' " + SqliteSerialize.GetDbType(t.FieldType)))) + (isList ? ",innerList TEXT" : "")
             );
 
             //获取InsertSql
             gtype.InsertSql = string.Format(
                 "INSERT INTO '{0}' ({1}) VALUES ({2})",
-                gtype.FullName,
-                string.Join(",", (from t in gtype.Fields select $"'{t.Name}'")) + (isCollection ? ",innerList" : ""),
-                string.Join(",", (from t in gtype.Fields select "@" + t.Name)) + (isCollection ? ",@innerList" : "")
+                typeName,
+                string.Join(",", (from t in gtype.Fields select $"'{t.Name}'")) + (isList ? ",innerList" : ""),
+                string.Join(",", (from t in gtype.Fields select "@" + t.Name)) + (isList ? ",@innerList" : "")
             );
 
             //获取UpdateSql
             gtype.UpdateSql = string.Format(
                 "UPDATE '{0}' SET {1} WHERE gid = @gid",
-                gtype.FullName,
-                string.Join(",", (from t in gtype.Fields select ($"'{t.Name}' = @{t.Name} "))) + (isCollection ? ",innerList=@innerList" : "")
+                typeName,
+                string.Join(",", (from t in gtype.Fields select ($"'{t.Name}' = @{t.Name} "))) + (isList ? ",innerList=@innerList" : "")
             );
 
             //获取DeleteSql
-            gtype.DeleteSql = "DELETE FROM '" + gtype.FullName + "' WHERE gid = @gid";
+            gtype.DeleteSql = "DELETE FROM '" + typeName + "' WHERE gid = @gid";
 
             
 

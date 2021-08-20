@@ -10,6 +10,7 @@ using System.IO;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Text.RegularExpressions;
 
 namespace JF.NET.SqliteSerializer
 {
@@ -28,6 +29,7 @@ namespace JF.NET.SqliteSerializer
         IGObject[] linkArr = new IGObject[9999999];
         int currentVisited = 0;
         bool isDirty;
+        Regex genTypeRegex = new Regex(@"(\S+)\[(?:\[(\S+),[\S ]+\])+\]");
         #endregion
 
         #region Constructor
@@ -79,29 +81,31 @@ namespace JF.NET.SqliteSerializer
                         if (fields[fieldIndex].Name == columns[columIndex].ColumnName)
                         {
                             var field = fields[fieldIndex];
-                            SetValue(gobj, fields[fieldIndex], row[columIndex]);
+                            SetValue(gobj, field, row[columIndex]);
                         }
                     }
                 }
             }
             
-            if (gobj is IGCollectionBase)
+            if (gobj is IGList)
             {
-                var collection = gobj as IGCollectionBase;
+                var collection = gobj as IGList;
                 var str = row["innerList"].ToString();
                 if (str.Length == 0) return;
                 var arr = str.Split('|');
                 for (int i = 0; i < arr.Length; i++)
                 {
                     int id = Convert.ToInt32(arr[i]);
+                    collection.Add(linkArr[id]);
+                    /*
                     foreach (IGObject obj in loadedObj)
                     {
                         if (obj.GID == id)
                         {
-                            collection.InnerList.Add(obj);
+                            collection.Add(obj);
                             break;
                         }
-                    }
+                    }*/
                 }
             }
         }
@@ -129,8 +133,8 @@ namespace JF.NET.SqliteSerializer
             if (create) obj.GID = GetGID();
             var typeInfo = GTypeInfo.Get(obj.GetType());
             //获取字段值
-            bool isCollection = obj is IGCollectionBase;
-            SQLiteParameter[] pts = new SQLiteParameter[typeInfo.Fields.Length + (isCollection ? 1 : 0)];
+            bool isList = obj is IGList;
+            SQLiteParameter[] pts = new SQLiteParameter[typeInfo.Fields.Length + (isList ? 1 : 0)];
             
             //为每个字段值转换成数据库能接受的值
             for (int i = 0; i < typeInfo.Fields.Length; i++)
@@ -173,11 +177,11 @@ namespace JF.NET.SqliteSerializer
                 pts[i] = new SQLiteParameter("@" + typeInfo.Fields[i].Name, dbFieldValue);
             }
             //如果是集合则额外添加一个字段
-            if (isCollection)
+            if (isList)
             {
-                IGCollectionBase collection = obj as IGCollectionBase;
-                StringBuilder strBuilder = new StringBuilder(collection.InnerList.Count * 2);
-                foreach (object item in collection.InnerList)
+                var list = obj as IGList;
+                StringBuilder strBuilder = new StringBuilder(list.Count * 2);
+                foreach (object item in list)
                 {
                     IGObject gitem = item as IGObject;
                     if (gitem == null) continue;
@@ -241,42 +245,77 @@ namespace JF.NET.SqliteSerializer
             {
                 dataTables.AddRange((from t in ds.Tables[0].Rows.Cast<DataRow>() select t[0].ToString()).ToArray());
             }
+            var types = new List<Type>();
+            foreach(var name in dataTables)
+            {
+                Type finalType = null;
+                var match = genTypeRegex.Match(name);
+                if (match.Success)
+                {
+                    var genType = this.GetType().Assembly.GetType(match.Groups[1].Value);
+                    if (genType == null)
+                        genType = assembly.GetType(match.Groups[1].Value);
+                    if (genType == null)
+                    {
+                        throw new InvalidDataException($"can not find type: {match.Groups[1].Value}");
+                    }
+                    else
+                    {
+                        var entityTypes = new Type[match.Groups.Count - 2];
+                        for (var i = 0; i < match.Groups.Count - 2; i++)
+                        {
+                            entityTypes[i] = assembly.GetType(match.Groups[i + 2].Value);
+                        }
+                        finalType = genType.MakeGenericType(entityTypes.ToArray());
+                    }
+                }
+                else
+                {
+                    finalType = assembly.GetType(name);
+                }
+
+                if (finalType == null)
+                    throw new InvalidDataException($"can not find type: {name}");
+
+                types.Add(finalType);
+            }
+
             //获取所有表内容
             using (DataSet ds = sqliteHelper.GetDs(string.Join(";", (from t in dataTables select string.Format("SELECT * FROM '{0}'", t)).ToArray())))
             {
-                List<DataRow> rows = new List<DataRow>();
-                for (int i = 0; i < dataTables.Count; i++)
+                loadedObj = new List<IGObject>(ds.Tables.Count * 10);
+
+                //反射创建每个独立实例
+                for (var i = 0; i < ds.Tables.Count; i++)
                 {
                     ds.Tables[i].TableName = dataTables[i];
                     foreach (DataRow row in ds.Tables[i].Rows)
-                        rows.Add(row);
+                    {
+                        var obj = System.Activator.CreateInstance(types[i]) as IGObject;
+                        var gid = Convert.ToInt32(row["gid"]);
+                        obj.GID = gid;
+                        obj.GDirty = false;
+                        loadedObj.Add(obj);
+                        linkArr[gid] = obj;
+                    }
                 }
 
-                //实例化所有对象
-                loadedObj = new List<IGObject>(rows.Count);
-
-                loadedObj.AddRange((from t in rows select (IGObject)assembly.CreateInstance(t.Table.TableName)).ToArray());
-                
-                for (int i = 0; i < rows.Count; i++)
+                //将字段赋值给实例，并创建关联引用
+                var index = 0;
+                for (var i = 0; i < ds.Tables.Count; i++)
                 {
-                    int gid = Convert.ToInt32(rows[i]["gid"]);
-                    maxGID = gid > maxGID ? gid : maxGID;
-                    if (loadedObj[i] == null) continue;
-                    loadedObj[i].GID = gid;
-                    linkArr[gid] = loadedObj[i];
+                    foreach (DataRow row in ds.Tables[i].Rows)
+                    {
+                        Deserialize(loadedObj[index++], row);
+                    }
                 }
 
-                for (int i = 0; i < rows.Count; i++)
-                {
-                    Deserialize(loadedObj[i], rows[i]);
-                    loadedObj[i].GDirty = false;
-                }
                 //校验数据库字段是否一致，并修正
                 bool updateNeed = false;
                 for (int i = 0; i < dataTables.Count; i++)
                 {
                     var columns = ds.Tables[dataTables[i]].Columns;
-                    Type type = assembly.GetType(dataTables[i]);
+                    Type type = types[i];
                     foreach (FieldInfo field in GTypeInfo.Get(type).Fields)
                     {
                         if (!columns.Contains(field.Name))

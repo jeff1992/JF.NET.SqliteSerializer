@@ -12,6 +12,6 @@ namespace JF.NET.SqliteSerializer
 
         int GVisitCount { get; set; }
         
-        int GID { get; set; }
+        int GID { get; set; }    
     }
 }

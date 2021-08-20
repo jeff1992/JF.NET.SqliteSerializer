@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Data;
+using System.Text;
+
 namespace JF.NET.SqliteSerializer
 {
-    public interface IGCollectionBase
+    public interface IGList : IList
     {
-        IList InnerList { get; }
+        void Add(IGObject item);
     }
 }
