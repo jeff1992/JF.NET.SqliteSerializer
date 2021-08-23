@@ -245,7 +245,6 @@ namespace JF.NET.SqliteSerializer
             {
                 dataTables = ds.Tables[0].Rows.Cast<DataRow>()
                             .Select(m => m[0].ToString())
-                            .Where(m => assembly.GetType(m, false) != null)
                             .ToList();
             }
             var types = new List<Type>();
