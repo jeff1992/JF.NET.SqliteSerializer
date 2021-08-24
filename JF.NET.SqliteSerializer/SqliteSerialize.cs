@@ -438,16 +438,17 @@ namespace JF.NET.SqliteSerializer
             else if ((typeof(IGObject)).IsAssignableFrom(fieldType)) //GObject派生类
             {
                 int gid = Convert.ToInt32(value);
+                var linkObj = linkArr[gid];
                 //检查引用类型是否正确
-                if (linkArr[gid] != null)
+                if (linkObj != null)
                 {
-                    if (fieldType.IsAssignableFrom(linkArr[gid].GetType()))
+                    if (fieldType.IsAssignableFrom(linkObj.GetType()))
                     {
-                        field.SetValue(gobj, linkArr[gid]);
+                        field.SetValue(gobj, linkObj);
                     }
                     else
                     {
-                        throw new Exception(string.Format("{0}[gid={1}]{2}字段指向了一个错误的引用{3}[gid={4}]", gobj.GetType().Name, gobj.GID, field.Name, linkArr[gid].GetType(), gid));
+                        throw new Exception(string.Format("{0}[gid={1}]{2}字段指向了一个错误的引用{3}[gid={4}]", gobj.GetType().Name, gobj.GID, field.Name, linkObj.GetType(), gid));
                     }
                 }
             }

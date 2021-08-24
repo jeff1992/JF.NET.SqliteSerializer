@@ -5,7 +5,7 @@ using System.ComponentModel;
 
 namespace JF.NET.SqliteSerializer
 {
-    public class GBindingList<T> : GObject, IBindingList, ICancelAddNew, IRaiseItemChangedEvents, IGList where T : class, IGObject
+    public class GBindingList<T> : GObject, IEnumerable<T>, IBindingList, ICancelAddNew, IRaiseItemChangedEvents, IGList where T : class, IGObject
     {
         BindingList<T> innerList = new BindingList<T>();
 
