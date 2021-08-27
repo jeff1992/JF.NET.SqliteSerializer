@@ -57,5 +57,12 @@ namespace Example
             }
         }
 
+        private Size size;
+
+        public Size Size
+        {
+            get { return size; }
+            set { size = value; }
+        }
     }
 }

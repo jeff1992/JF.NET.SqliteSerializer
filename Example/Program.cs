@@ -15,7 +15,8 @@ namespace Example
         {
             var classRoom = new ClassRoom()
             {
-                Name = "1"
+                Name = "1",
+                Size = new Size(100, 200)
             };
             classRoom.Teacher = new Teacher()
             {
@@ -55,6 +56,7 @@ namespace Example
             if (entry != null)
             {
                 Console.WriteLine($"class room name: {entry.Name}");
+                Console.WriteLine($"class room size: {entry.Size.Width}, {entry.Size.Height}");
                 Console.WriteLine($"class room students: {entry.Students.Count}");
                 Console.WriteLine($"class room teacher: {entry.Teacher.Name}");
             }

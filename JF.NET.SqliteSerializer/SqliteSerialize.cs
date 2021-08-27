@@ -30,6 +30,7 @@ namespace JF.NET.SqliteSerializer
         int currentVisited = 0;
         bool isDirty;
         Regex genTypeRegex = new Regex(@"(\S+)\[(?:\[(\S+),[\S ]+\])+\]");
+        BinaryFormatter binaryFormatter = new BinaryFormatter();
         #endregion
 
         #region Constructor
@@ -164,6 +165,14 @@ namespace JF.NET.SqliteSerializer
                 else if (fieldType == typeof(Point)) { Point p = (Point)fieldValue; dbFieldValue = string.Format("{0},{1}", p.X, p.Y); }
                 else if (fieldType == typeof(Size)) { Size s = (Size)fieldValue; dbFieldValue = string.Format("{0},{1}", s.Width, s.Height); }
                 else if (fieldType == typeof(Rectangle)) { Rectangle r = (Rectangle)fieldValue; dbFieldValue = string.Format("{0},{1},{2},{3}", r.X, r.Y, r.Width, r.Height); }
+                else if (fieldType.IsValueType)
+                {
+                    using (var ms = new MemoryStream())
+                    {
+                        binaryFormatter.Serialize(ms, fieldValue);
+                        dbFieldValue = ms.GetBuffer();
+                    }
+                }
                 //else if (fieldValue is Image)
                 //{
                 //    MemoryStream ms = new MemoryStream();
@@ -364,6 +373,7 @@ namespace JF.NET.SqliteSerializer
             if (type == typeof(Point)) return DBFieldType.TEXT;
             if (type == typeof(Size)) return DBFieldType.TEXT;
             if (type == typeof(Rectangle)) return DBFieldType.TEXT;
+            if (type.IsValueType) return DBFieldType.BLOB;  //use blob to save other value type
             //if (type == typeof(Image)) return DBFieldType.BLOB;
             return DBFieldType.NONE;
         }
@@ -414,13 +424,26 @@ namespace JF.NET.SqliteSerializer
                 var arr = value.ToString().Split(',');
                 field.SetValue(gobj, new Rectangle(Convert.ToInt32(arr[0]), Convert.ToInt32(arr[1]), Convert.ToInt32(arr[2]), Convert.ToInt32(arr[3])));
             }
-                /*
-            else if (fieldType == typeof(Image))
+            else if (fieldType.IsEnum)
             {
-                MemoryStream stream = new MemoryStream((byte[])value);
-                field.SetValue(gobj, Image.FromStream(stream));
+                field.SetValue(gobj, Convert.ToInt32(value));
             }
-                 * */
+            else if (fieldType.IsValueType)
+            {
+                //blob -> value
+                var bytes = (byte[])value;
+                using (var ms = new MemoryStream((byte[])value))
+                {
+                    field.SetValue(gobj, binaryFormatter.Deserialize(ms));
+                }
+            }
+            /*
+        else if (fieldType == typeof(Image))
+        {
+            MemoryStream stream = new MemoryStream((byte[])value);
+            field.SetValue(gobj, Image.FromStream(stream));
+        }
+             * */
             //else if (fieldType == typeof(Image))
             //{
             //    MemoryStream stream = new MemoryStream((byte[])value);
@@ -457,10 +480,6 @@ namespace JF.NET.SqliteSerializer
                         throw new Exception(string.Format("{0}[gid={1}]{2}字段指向了一个错误的引用{3}[gid={4}]", gobj.GetType().Name, gobj.GID, field.Name, linkObj.GetType(), gid));
                     }
                 }
-            }
-            else if (fieldType.IsEnum)
-            {
-                field.SetValue(gobj, Convert.ToInt32(value));
             }
         }
 

@@ -49,6 +49,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Sex.cs" />
+    <Compile Include="Size.cs" />
     <Compile Include="Teacher.cs" />
     <Compile Include="Student.cs" />
     <Compile Include="Program.cs" />
