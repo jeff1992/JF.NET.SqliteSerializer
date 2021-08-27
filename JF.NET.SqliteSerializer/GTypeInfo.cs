@@ -17,30 +17,47 @@ namespace JF.NET.SqliteSerializer
 
         static List<GTypeInfo> list = new List<GTypeInfo>();
 
-        public Type Type;
-        public string FullName;
-        public string CreateTableSql;
-        public string InsertSql;
-        public string UpdateSql;
-        public string DeleteSql;
-        public FieldInfo[] Fields;
+        public Type OriginType { get; private set; }
+        public string FullName { get; private set; }
+        public string CreateTableSql { get; private set; }
+        public string InsertSql { get; private set; }
+        public string UpdateSql { get; private set; }
+        public string DeleteSql { get; private set; }
+        public FieldInfo[] Fields { get; private set; }
+        public GTypeInfo Parent { get; private set; }
         
         public static GTypeInfo Get(Type type)
         {
             foreach (GTypeInfo gType in list)
-                if (type == gType.Type) return gType;
+                if (type == gType.OriginType) return gType;
 
             GTypeInfo gtype = new GTypeInfo();
 
             //设置Type
-            gtype.Type = type;
+            gtype.OriginType = type;
 
             //获取FullName
             gtype.FullName = type.FullName;
 
+            //获取父类
+            if (type.BaseType != null && typeof(IGObject).IsAssignableFrom(type.BaseType))
+            {
+                gtype.Parent = Get(type.BaseType);
+            }
+
             //获取支持存储的Fields
             var orgFields = type.GetFields(BindingFlags.Instance | BindingFlags.NonPublic);
-            gtype.Fields = (from t in orgFields where !t.IsNotSerialized && !t.Name.Contains('<') && SqliteSerialize.GetDbType(t.FieldType) != SqliteSerialize.DBFieldType.NONE select t).ToArray();
+            var thisFields = (from t in orgFields where !t.IsNotSerialized && !t.Name.Contains('<') && SqliteSerialize.GetDbType(t.FieldType) != SqliteSerialize.DBFieldType.NONE select t).ToList();
+            if (gtype.Parent != null)
+            {
+                foreach (var field in gtype.Parent.Fields)
+                {
+                    if (!thisFields.Any(m => m.Name == field.Name))
+                        thisFields.Add(field);
+                }
+            }
+            gtype.Fields = thisFields.ToArray();
+
             //gtype.Fields = (from t in fields where !t.IsNotSerialized select t).ToArray();
 
             //标识是否为集合

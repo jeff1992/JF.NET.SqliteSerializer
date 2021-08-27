@@ -27,7 +27,7 @@ namespace JF.NET.SqliteSerializer
         bool gGDirty = true;
         [NonSerialized()]
         int gVisitCount = 0;
-        protected int gid = -1;
+        int gid = -1;
         #endregion
 
         #region Property

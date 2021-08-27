@@ -24,7 +24,7 @@ namespace JF.NET.SqliteSerializer
         SQLiteHelper sqliteHelper;
         List<IGObject> loadedObj = new List<IGObject>();
         List<IGObject> savedObj = new List<IGObject>();
-        int maxGID = 1000;
+        int newGid = 0;
         List<string> dataTables = new List<string>(20);
         IGObject[] linkArr = new IGObject[9999999];
         int currentVisited = 0;
@@ -52,7 +52,7 @@ namespace JF.NET.SqliteSerializer
         /// <returns></returns>
         int GetGID()
         {
-            return ++maxGID;
+            return newGid++;
         }
 
         /// <summary>
@@ -96,16 +96,15 @@ namespace JF.NET.SqliteSerializer
                 for (int i = 0; i < arr.Length; i++)
                 {
                     int id = Convert.ToInt32(arr[i]);
-                    collection.Add(linkArr[id]);
-                    /*
-                    foreach (IGObject obj in loadedObj)
+                    var linkObj = linkArr[id];
+                    if (linkObj == null)
                     {
-                        if (obj.GID == id)
-                        {
-                            collection.Add(obj);
-                            break;
-                        }
-                    }*/
+
+                    }
+                    else
+                    {
+                        collection.Add(linkObj);
+                    }
                 }
             }
         }
@@ -312,6 +311,9 @@ namespace JF.NET.SqliteSerializer
                     }
                 }
 
+                //update next gid
+                newGid = loadedObj.Max(m => m.GID) + 1;
+
                 //校验数据库字段是否一致，并修正
                 bool updateNeed = false;
                 for (int i = 0; i < dataTables.Count; i++)
@@ -440,7 +442,11 @@ namespace JF.NET.SqliteSerializer
                 int gid = Convert.ToInt32(value);
                 var linkObj = linkArr[gid];
                 //检查引用类型是否正确
-                if (linkObj != null)
+                if (linkObj == null)
+                {
+
+                }
+                else
                 {
                     if (fieldType.IsAssignableFrom(linkObj.GetType()))
                     {
