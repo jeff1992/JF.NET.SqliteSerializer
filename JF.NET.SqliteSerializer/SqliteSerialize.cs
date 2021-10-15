@@ -407,6 +407,12 @@ namespace JF.NET.SqliteSerializer
                 field.SetValue(gobj, Convert.ToUInt32(value));
             else if (fieldType == typeof(UInt64))
                 field.SetValue(gobj, Convert.ToUInt64(value));
+            else if (fieldType == typeof(Double))
+                field.SetValue(gobj, Convert.ToDouble(value));
+            else if (fieldType == typeof(Single))
+                field.SetValue(gobj, Convert.ToSingle(value));
+            else if (fieldType == typeof(Decimal))
+                field.SetValue(gobj, Convert.ToDecimal(value));
             else if (fieldType == typeof(string))
                 field.SetValue(gobj, Convert.ToString(value));
             else if (fieldType == typeof(Point))
